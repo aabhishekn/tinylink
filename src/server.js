@@ -1,4 +1,5 @@
 // src/server.js
+const path = require("path");
 const express = require("express");
 const dotenv = require("dotenv");
 const db = require("./db");
@@ -14,6 +15,8 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware to parse JSON request bodies (we'll need this later for /api/links)
 app.use(express.json());
+// Serve static files from the "public" folder
+app.use(express.static(path.join(__dirname, "..", "public")));
 
 // Healthcheck route
 app.get("/healthz", (req, res) => {
@@ -197,6 +200,16 @@ app.delete("/api/links/:code", async (req, res) => {
     console.error("Error deleting link:", err);
     return res.status(500).json({ error: "Failed to delete link." });
   }
+});
+
+// Serve dashboard page
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "public", "index.html"));
+});
+
+// Serve stats page for a given code
+app.get("/code/:code", (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "public", "code.html"));
 });
 
 // Redirect route: must be near the bottom so it doesn't catch /api, /healthz, etc.

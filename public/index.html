@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>TinyLink Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-slate-100 min-h-screen">
+    <header class="bg-white shadow">
+      <div
+        class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between"
+      >
+        <h1 class="text-2xl font-bold text-slate-800">TinyLink</h1>
+        <span class="text-sm text-slate-500">Dashboard</span>
+      </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 py-8">
+      <!-- Create new link form -->
+      <div class="bg-white rounded-2xl shadow p-6 mb-8">
+        <h2 class="text-xl font-semibold mb-4 text-slate-800">
+          Create Short Link
+        </h2>
+
+        <form id="create-form" class="flex flex-col gap-4">
+          <input
+            id="targetUrl"
+            type="text"
+            placeholder="Enter target URL (https://...)"
+            class="border p-3 rounded-lg"
+            required
+          />
+
+          <input
+            id="customCode"
+            type="text"
+            placeholder="Optional custom code (6–8 letters/numbers)"
+            class="border p-3 rounded-lg"
+          />
+
+          <button
+            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+            type="submit"
+          >
+            Create
+          </button>
+        </form>
+      </div>
+
+      <!-- Links table -->
+      <div class="bg-white rounded-2xl shadow p-6">
+        <h2 class="text-xl font-semibold mb-4 text-slate-800">
+          Your Short Links
+        </h2>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead class="bg-slate-200 text-slate-700">
+              <tr>
+                <th class="p-3">Code</th>
+                <th class="p-3">Target URL</th>
+                <th class="p-3 text-center">Clicks</th>
+                <th class="p-3 text-center">Last Clicked</th>
+                <th class="p-3 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="links-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <!-- Load dashboard JS -->
+    <script src="dashboard.js"></script>
+  </body>
+</html>
