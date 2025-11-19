@@ -4,7 +4,6 @@ const dotenv = require("dotenv");
 const db = require("./db");
 const { isValidUrl, isValidCode, generateRandomCode } = require("./utils");
 
-
 // Load environment variables from .env file (if present)
 dotenv.config();
 
@@ -114,6 +113,125 @@ app.post("/api/links", async (req, res) => {
     return res.status(500).json({
       error: "Unexpected server error.",
     });
+  }
+});
+
+// Get all links
+app.get("/api/links", async (req, res) => {
+  try {
+    const result = await db.query(
+      `SELECT id, code, target_url, total_clicks, last_clicked_at, created_at, updated_at
+       FROM links
+       ORDER BY created_at DESC`
+    );
+
+    const links = result.rows.map((row) => ({
+      id: row.id,
+      code: row.code,
+      targetUrl: row.target_url,
+      totalClicks: row.total_clicks,
+      lastClickedAt: row.last_clicked_at,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    }));
+
+    return res.status(200).json(links);
+  } catch (err) {
+    console.error("Error fetching links:", err);
+    return res.status(500).json({ error: "Failed to fetch links." });
+  }
+});
+
+// Get stats for a single link by shortcode
+app.get("/api/links/:code", async (req, res) => {
+  const { code } = req.params;
+
+  try {
+    const result = await db.query(
+      `SELECT id, code, target_url, total_clicks, last_clicked_at, created_at, updated_at
+       FROM links
+       WHERE code = $1`,
+      [code]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Short link not found." });
+    }
+
+    const row = result.rows[0];
+
+    return res.status(200).json({
+      id: row.id,
+      code: row.code,
+      targetUrl: row.target_url,
+      totalClicks: row.total_clicks,
+      lastClickedAt: row.last_clicked_at,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    });
+  } catch (err) {
+    console.error("Error fetching link stats:", err);
+    return res.status(500).json({ error: "Failed to fetch link stats." });
+  }
+});
+
+// Delete a link by shortcode
+app.delete("/api/links/:code", async (req, res) => {
+  const { code } = req.params;
+
+  try {
+    // Delete the record
+    const result = await db.query(
+      `DELETE FROM links
+       WHERE code = $1
+       RETURNING id`,
+      [code]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Short link not found." });
+    }
+
+    return res.status(200).json({ ok: true, message: "Link deleted." });
+  } catch (err) {
+    console.error("Error deleting link:", err);
+    return res.status(500).json({ error: "Failed to delete link." });
+  }
+});
+
+// Redirect route: must be near the bottom so it doesn't catch /api, /healthz, etc.
+app.get("/:code", async (req, res) => {
+  const { code } = req.params;
+
+  // Optional: ignore browser's automatic /favicon.ico request
+  if (code === "favicon.ico") {
+    return res.status(404).end();
+  }
+
+  try {
+    // Update click count and last_clicked_at, and get target URL in one query
+    const result = await db.query(
+      `UPDATE links
+       SET total_clicks = total_clicks + 1,
+           last_clicked_at = NOW(),
+           updated_at = NOW()
+       WHERE code = $1
+       RETURNING target_url`,
+      [code]
+    );
+
+    if (result.rows.length === 0) {
+      // No such code
+      return res.status(404).json({ error: "Short link not found." });
+    }
+
+    const targetUrl = result.rows[0].target_url;
+
+    // 302 redirect to the original URL
+    return res.redirect(302, targetUrl);
+  } catch (err) {
+    console.error("Error in redirect route:", err);
+    return res.status(500).json({ error: "Failed to redirect." });
   }
 });
 
