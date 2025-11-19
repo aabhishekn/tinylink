@@ -1,0 +1,54 @@
+# Node
+node_modules/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+debug.log*
+logs/
+
+# Runtime data
+pids/
+*.pid
+
+# Coverage reports
+coverage/
+.nyc_output/
+
+# Build output
+dist/
+build/
+
+# dotenv environment files
+.env
+.env.local
+.env.*.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor directories
+.vscode/
+.idea/
+
+# Misc
+.npm
+.cache/
+*.tgz
+
+# Optional lock files (keep package-lock.json committed unless you intentionally want to ignore it)
+# package-lock.json
+
+# Parcel, Next, and other caches
+.parcel-cache/
+.next/
+
+# Nodemon
+nodemon.json
+
+# Temporary files
+tmp/
+temp/

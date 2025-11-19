@@ -1,0 +1,29 @@
+{
+  "name": "tinylink",
+  "version": "1.0.0",
+  "description": "��#\u0000 \u0000t\u0000i\u0000n\u0000y\u0000l\u0000i\u0000n\u0000k\u0000\r\u0000 \u0000",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aabhishekn/tinylink.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/aabhishekn/tinylink/issues"
+  },
+  "homepage": "https://github.com/aabhishekn/tinylink#readme",
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11"
+  }
+}
