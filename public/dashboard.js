@@ -2,6 +2,7 @@
 
 const API_BASE = "";
 let hasLoadedOnce = false;
+let deletePendingCode = null;
 
 // Toast notifications
 function showToast(message, type = "info") {
@@ -251,30 +252,74 @@ function copyToClipboard(text) {
 }
 
 // Delete a link
-async function deleteLink(code) {
-  if (!confirm(`Delete short link: ${code}?`)) return;
+// ---- Delete Link (uses confirmation modal) ----
+
+function deleteLink(code) {
+  deletePendingCode = code;
+
+  const modal = document.getElementById("delete-modal");
+  const panel = document.getElementById("delete-modal-panel");
+
+  modal.classList.remove("hidden");
+  modal.classList.add("flex", "modal-backdrop-open");
+
+  requestAnimationFrame(() => {
+    panel.classList.add("modal-panel-open");
+  });
+}
+
+async function confirmDelete() {
+  if (!deletePendingCode) return;
 
   try {
-    const res = await fetch(`${API_BASE}/api/links/${code}`, {
+    const res = await fetch(`/api/links/${deletePendingCode}`, {
       method: "DELETE",
     });
     const data = await res.json();
 
     if (!res.ok) {
       showToast(data.error || "Failed to delete", "error");
-      return;
+    } else {
+      // Remove row immediately
+      const row = document.querySelector(`tr[data-code="${deletePendingCode}"]`);
+      if (row) row.remove();
+
+      showToast("Link deleted", "success");
     }
-
-    // Remove row from table immediately
-    const row = document.querySelector(`tr[data-code="${code}"]`);
-    if (row) row.remove();
-
-    showToast("Link deleted", "success");
   } catch (err) {
     console.error(err);
     showToast("Error deleting link", "error");
   }
+
+  closeDeleteModal();
 }
+
+function closeDeleteModal() {
+  const modal = document.getElementById("delete-modal");
+  const panel = document.getElementById("delete-modal-panel");
+
+  modal.classList.remove("modal-backdrop-open");
+  panel.classList.remove("modal-panel-open");
+
+  setTimeout(() => {
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+  }, 180);
+
+  deletePendingCode = null;
+}
+
+// Bind buttons:
+document.getElementById("delete-cancel-btn").addEventListener("click", closeDeleteModal);
+document.getElementById("delete-confirm-btn").addEventListener("click", confirmDelete);
+
+// Close modal when clicking backdrop
+document.getElementById("delete-modal").addEventListener("click", (e) => {
+  if (e.target.id === "delete-modal") {
+    closeDeleteModal();
+  }
+});
+
 
 // ---- Details Modal Logic ----
 
