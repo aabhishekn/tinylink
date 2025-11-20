@@ -248,39 +248,42 @@
       </div>
     </div>
     <!-- Delete Confirmation Modal -->
-<div
-  id="delete-modal"
-  class="modal-backdrop fixed inset-0 z-40 hidden items-center justify-center bg-slate-900/40"
->
-  <div
-    id="delete-modal-panel"
-    class="modal-panel-animated bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-sm mx-4 border border-slate-200/80 dark:border-slate-800/80 p-6"
-  >
-    <h2 class="text-lg font-semibold text-slate-800 dark:text-slate-50 mb-3">
-      Delete Link?
-    </h2>
-
-    <p class="text-sm text-slate-600 dark:text-slate-300 mb-6">
-      This action is permanent. The short link will stop working immediately.
-    </p>
-
-    <div class="flex justify-end gap-3">
-      <button
-        id="delete-cancel-btn"
-        class="px-4 py-2 rounded-lg text-sm bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600"
+    <div
+      id="delete-modal"
+      class="modal-backdrop fixed inset-0 z-40 hidden items-center justify-center bg-slate-900/40"
+    >
+      <div
+        id="delete-modal-panel"
+        class="modal-panel-animated bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-sm mx-4 border border-slate-200/80 dark:border-slate-800/80 p-6"
       >
-        Cancel
-      </button>
+        <h2
+          class="text-lg font-semibold text-slate-800 dark:text-slate-50 mb-3"
+        >
+          Delete Link?
+        </h2>
 
-      <button
-        id="delete-confirm-btn"
-        class="px-4 py-2 rounded-lg text-sm bg-red-600 text-white hover:bg-red-700"
-      >
-        Delete
-      </button>
+        <p class="text-sm text-slate-600 dark:text-slate-300 mb-6">
+          This action is permanent. The short link will stop working
+          immediately.
+        </p>
+
+        <div class="flex justify-end gap-3">
+          <button
+            id="delete-cancel-btn"
+            class="px-4 py-2 rounded-lg text-sm bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600"
+          >
+            Cancel
+          </button>
+
+          <button
+            id="delete-confirm-btn"
+            class="px-4 py-2 rounded-lg text-sm bg-red-600 text-white hover:bg-red-700"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
     <!-- Main content -->
     <main
@@ -309,15 +312,36 @@
           class="bg-white dark:bg-slate-900 rounded-2xl shadow p-6 border border-slate-200 dark:border-slate-800 h-full flex flex-col"
         >
           <div
-            class="mb-4 flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between"
+            class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
           >
-            <h2 class="text-xl font-semibold text-slate-800 dark:text-slate-50">
-              Your Short Links
-            </h2>
-            <p class="text-xs text-slate-500 dark:text-slate-400">
-              Click a code to view detailed stats, or use the short URL to
-              redirect.
-            </p>
+            <div>
+              <h2
+                class="text-xl font-semibold text-slate-800 dark:text-slate-50"
+              >
+                Your Short Links
+              </h2>
+              <p class="text-xs text-slate-500 dark:text-slate-400">
+                Click a code to view detailed stats, or use the short URL to
+                redirect.
+              </p>
+            </div>
+
+            <!-- Search / filter -->
+            <div class="w-full sm:w-64">
+              <div class="relative">
+                <input
+                  id="search-input"
+                  type="text"
+                  placeholder="Search by code or URL..."
+                  class="w-full pl-9 pr-3 py-2 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/70 focus:border-blue-500/70 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                />
+                <span
+                  class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 text-sm"
+                >
+                  🔍
+                </span>
+              </div>
+            </div>
           </div>
 
           <!-- Scrollable area just for the table body -->

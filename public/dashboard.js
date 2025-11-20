@@ -1,6 +1,7 @@
 const API_BASE = "";
 let hasLoadedOnce = false;
 let deletePendingCode = null;
+let currentFilter = "";
 
 // Toast notifications
 function showToast(message, type = "info") {
@@ -49,7 +50,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const form = document.getElementById("create-form");
   form.addEventListener("submit", handleCreateLink);
-
+  // Search / filter
+  const searchInput = document.getElementById("search-input");
+  if (searchInput) {
+    searchInput.addEventListener("input", (e) => {
+      currentFilter = e.target.value || "";
+      applyFilterToRows();
+    });
+  }
   // Auto-refresh links every 5 seconds, but now with smooth updates
   setInterval(() => {
     loadLinks();
@@ -127,6 +135,8 @@ async function loadLinks() {
 
     // Upsert rows (update if exists, create if missing)
     links.forEach((link) => upsertRow(link));
+    // Apply current filter to updated rows
+    applyFilterToRows();
   } catch (err) {
     console.error(err);
     if (!hasLoadedOnce) {
@@ -279,7 +289,9 @@ async function confirmDelete() {
       showToast(data.error || "Failed to delete", "error");
     } else {
       // Remove row immediately
-      const row = document.querySelector(`tr[data-code="${deletePendingCode}"]`);
+      const row = document.querySelector(
+        `tr[data-code="${deletePendingCode}"]`
+      );
       if (row) row.remove();
 
       showToast("Link deleted", "success");
@@ -308,8 +320,12 @@ function closeDeleteModal() {
 }
 
 // Bind buttons:
-document.getElementById("delete-cancel-btn").addEventListener("click", closeDeleteModal);
-document.getElementById("delete-confirm-btn").addEventListener("click", confirmDelete);
+document
+  .getElementById("delete-cancel-btn")
+  .addEventListener("click", closeDeleteModal);
+document
+  .getElementById("delete-confirm-btn")
+  .addEventListener("click", confirmDelete);
 
 // Close modal when clicking backdrop
 document.getElementById("delete-modal").addEventListener("click", (e) => {
@@ -317,7 +333,6 @@ document.getElementById("delete-modal").addEventListener("click", (e) => {
     closeDeleteModal();
   }
 });
-
 
 // ---- Details Modal Logic ----
 
@@ -448,5 +463,54 @@ async function loadLinkDetails(code) {
     console.error(err);
     content.innerHTML = `<p class="text-red-600">Error loading details.</p>`;
     showToast("Error loading link details", "error");
+  }
+}
+function applyFilterToRows() {
+  const tableBody = document.getElementById("links-table-body");
+  if (!tableBody) return;
+
+  const filter = currentFilter.trim().toLowerCase();
+
+  // Remove old "no match" row if any
+  const emptyRow = document.getElementById("filter-empty-row");
+  if (emptyRow) emptyRow.remove();
+
+  const dataRows = Array.from(tableBody.querySelectorAll("tr[data-code]"));
+
+  // If no real rows at all, nothing to filter
+  if (dataRows.length === 0) {
+    return;
+  }
+
+  // If filter is empty → show all rows
+  if (!filter) {
+    dataRows.forEach((row) => row.classList.remove("hidden"));
+    return;
+  }
+
+  let visibleCount = 0;
+
+  dataRows.forEach((row) => {
+    const codeCell = row.querySelector(".cell-code");
+    const targetCell = row.querySelector(".cell-target");
+
+    const codeText = codeCell?.textContent.toLowerCase() || "";
+    const targetText = targetCell?.textContent.toLowerCase() || "";
+
+    const matches = codeText.includes(filter) || targetText.includes(filter);
+
+    row.classList.toggle("hidden", !matches);
+    if (matches) visibleCount++;
+  });
+
+  if (visibleCount === 0) {
+    const tr = document.createElement("tr");
+    tr.id = "filter-empty-row";
+    tr.innerHTML = `
+      <td colspan="5" class="p-4 text-center text-slate-500 dark:text-slate-400">
+        No links match your search.
+      </td>
+    `;
+    tableBody.appendChild(tr);
   }
 }
