@@ -207,10 +207,6 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "..", "public", "index.html"));
 });
 
-// Serve stats page for a given code
-app.get("/code/:code", (req, res) => {
-  res.sendFile(path.join(__dirname, "..", "public", "code.html"));
-});
 
 // Redirect route: must be near the bottom so it doesn't catch /api, /healthz, etc.
 app.get("/:code", async (req, res) => {
