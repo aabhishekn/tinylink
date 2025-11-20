@@ -78,8 +78,7 @@
               </div>
               <div
                 class="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1"
-              >
-              </div>
+              ></div>
             </div>
           </div>
 
@@ -162,6 +161,36 @@
               Create
             </button>
           </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Link Details Modal -->
+    <div
+      id="details-modal"
+      class="fixed inset-0 z-40 hidden items-center justify-center bg-slate-900/40"
+    >
+      <div
+        id="details-modal-panel"
+        class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-lg mx-4 border border-slate-200/80 dark:border-slate-800/80"
+      >
+        <div class="px-6 pt-5 pb-3 flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-slate-800 dark:text-slate-50">
+            Link Details
+          </h2>
+          <button
+            id="close-details-modal"
+            type="button"
+            class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xl leading-none"
+            aria-label="Close"
+          >
+            &times;
+          </button>
+        </div>
+
+        <div id="details-content" class="px-6 pb-6 text-sm">
+          <!-- JS will fill details here -->
+          <p class="text-slate-500">Loading...</p>
         </div>
       </div>
     </div>
