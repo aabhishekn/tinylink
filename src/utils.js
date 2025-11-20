@@ -1,5 +1,3 @@
-// src/utils.js
-
 // Allowed characters for random code
 const CODE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 

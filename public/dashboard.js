@@ -1,5 +1,3 @@
-// public/dashboard.js
-
 const API_BASE = "";
 let hasLoadedOnce = false;
 let deletePendingCode = null;
