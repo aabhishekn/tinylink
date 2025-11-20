@@ -6,73 +6,263 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+      // Enable Tailwind dark mode via "dark" class
+      tailwind.config = {
+        darkMode: "class",
+      };
+    </script>
+
+    <script>
+      // Initialize theme from localStorage before paint (avoid flash)
+      (function () {
+        try {
+          const stored = localStorage.getItem("theme");
+          if (stored === "dark") {
+            document.documentElement.classList.add("dark");
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
-  <body class="bg-slate-100 min-h-screen">
-    <header class="fixed top-0 left-0 right-0 bg-white shadow z-50">
+
+  <body
+    class="bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen"
+  >
+    <!-- Modern fixed header -->
+    <header class="fixed top-0 inset-x-0 z-50">
       <div
-        class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between"
+        class="backdrop-blur-md bg-white/70 dark:bg-slate-900/70 border-b border-slate-200/80 dark:border-slate-800/80"
       >
-        <h1 class="text-2xl font-bold text-slate-800">TinyLink <span class="text-sm text-slate-500">Dashboard</span></h1>
-        
+        <div
+          class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-4"
+        >
+          <!-- Left: logo + breadcrumb -->
+          <div class="flex items-center gap-3">
+            <!-- Logo / icon -->
+            <div
+              class="h-9 w-9 rounded-xl bg-blue-600 text-white flex items-center justify-center font-semibold shadow-sm"
+            >
+              TL
+            </div>
+            <div class="flex flex-col">
+              <div class="flex items-center gap-2">
+                <span
+                  class="text-sm font-semibold tracking-tight text-slate-800 dark:text-slate-100"
+                  >TinyLink</span
+                >
+                <span
+                  class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200"
+                  >Dashboard</span
+                >
+              </div>
+              <div
+                class="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1"
+              >
+                <span>Home</span>
+                <span>/</span>
+                <span class="font-medium text-slate-600 dark:text-slate-300"
+                  >Dashboard</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: theme toggle + New Link button -->
+          <div class="flex items-center gap-3">
+            <!-- Dark / light toggle -->
+            <button
+              id="theme-toggle"
+              type="button"
+              class="h-9 w-9 rounded-full border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/80 transition"
+              aria-label="Toggle dark mode"
+            >
+              <span id="icon-sun" class="text-lg hidden">☀️</span>
+              <span id="icon-moon" class="text-lg">🌙</span>
+            </button>
+
+            <!-- New Link button (opens modal) -->
+            <button
+              id="open-create-modal"
+              type="button"
+              class="inline-flex items-center gap-2 rounded-full bg-blue-600 text-white text-sm font-medium px-4 py-2 shadow-sm hover:bg-blue-700 active:scale-[0.98] transition"
+            >
+              <span class="text-base leading-none">＋</span>
+              <span>New Link</span>
+            </button>
+          </div>
+        </div>
       </div>
     </header>
 
-    <main class="max-w-5xl mx-auto px-4 py-8 pt-24">
-      <!-- Create new link form -->
-      <div class="bg-white rounded-2xl shadow p-6 mb-8">
-        <h2 class="text-xl font-semibold mb-4 text-slate-800">
-          Create Short Link
-        </h2>
-
-        <form id="create-form" class="flex flex-col gap-4">
-          <input
-            id="targetUrl"
-            type="text"
-            placeholder="Enter target URL (https://...)"
-            class="border p-3 rounded-lg"
-            required
-          />
-
-          <input
-            id="customCode"
-            type="text"
-            placeholder="Optional custom code (6–8 letters/numbers)"
-            class="border p-3 rounded-lg"
-          />
-
+    <!-- Create Link Modal -->
+    <div
+      id="create-modal"
+      class="fixed inset-0 z-40 hidden items-center justify-center bg-slate-900/40"
+    >
+      <div
+        id="create-modal-panel"
+        class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-lg mx-4 border border-slate-200/80 dark:border-slate-800/80"
+      >
+        <div class="px-6 pt-5 pb-3 flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-slate-800 dark:text-slate-50">
+            Create Short Link
+          </h2>
           <button
-            class="bg-blue-600 text-white mx-auto px-4 py-2 rounded-lg hover:bg-blue-700"
-            type="submit"
+            id="close-create-modal"
+            type="button"
+            class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xl leading-none"
+            aria-label="Close"
           >
-            Create
+            &times;
           </button>
-        </form>
-      </div>
+        </div>
+        <div class="px-6 pb-6">
+          <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">
+            Paste a long URL and optionally choose your own shortcode. Short
+            links will appear instantly in your dashboard below.
+          </p>
 
-      <!-- Links table -->
-      <div class="bg-white rounded-2xl shadow p-6">
-        <h2 class="text-xl font-semibold mb-4 text-slate-800">
-          Your Short Links
-        </h2>
+          <!-- Same form as before, just moved into modal -->
+          <form id="create-form" class="flex flex-col gap-4">
+            <input
+              id="targetUrl"
+              type="text"
+              placeholder="Enter target URL (https://...)"
+              class="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/70 focus:border-blue-500/70 p-3 rounded-lg text-sm"
+              required
+            />
 
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse">
-            <thead class="bg-slate-200 text-slate-700">
-              <tr>
-                <th class="p-3">Code</th>
-                <th class="p-3">Target URL</th>
-                <th class="p-3 text-center">Clicks</th>
-                <th class="p-3 text-center">Last Clicked</th>
-                <th class="p-3 text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody id="links-table-body"></tbody>
-          </table>
+            <input
+              id="customCode"
+              type="text"
+              placeholder="Optional custom code (6–8 letters/numbers)"
+              class="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/70 focus:border-blue-500/70 p-3 rounded-lg text-sm"
+            />
+
+            <button
+              class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 active:scale-[0.99] transition self-end"
+              type="submit"
+            >
+              Create
+            </button>
+          </form>
         </div>
       </div>
+    </div>
+
+    <!-- Main content -->
+    <main class="max-w-5xl mx-auto px-4 pt-28 pb-10 space-y-6">
+      <!-- Overview card -->
+      <section>
+        <div
+          class="bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-2xl shadow-sm p-5 border border-slate-200/70 dark:border-slate-800/80"
+        >
+          <h2 class="text-lg font-semibold mb-1 text-slate-800 dark:text-white">
+            Overview
+          </h2>
+          <p class="text-sm text-slate-500 dark:text-slate-400">
+            Use the <span class="font-medium">“New Link”</span> button in the
+            header to create short links. Your links and live click statistics
+            appear in the table below.
+          </p>
+        </div>
+      </section>
+
+      <!-- Links table -->
+      <section>
+        <div
+          class="bg-white dark:bg-slate-900 rounded-2xl shadow p-6 border border-slate-200 dark:border-slate-800"
+        >
+          <div
+            class="mb-4 flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between"
+          >
+            <h2
+              class="text-xl font-semibold text-slate-800 dark:text-slate-50"
+            >
+              Your Short Links
+            </h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400">
+              Click a code to view detailed stats, or use the short URL to
+              redirect.
+            </p>
+          </div>
+
+          <div class="overflow-x-auto rounded-xl border border-slate-100 dark:border-slate-800">
+            <table class="w-full text-left border-collapse text-sm">
+              <thead
+                class="bg-slate-100/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300"
+              >
+                <tr>
+                  <th class="p-3">Code</th>
+                  <th class="p-3">Target URL</th>
+                  <th class="p-3 text-center">Clicks</th>
+                  <th class="p-3 text-center">Last Clicked</th>
+                  <th class="p-3 text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="links-table-body" class="bg-white dark:bg-slate-900">
+                <!-- Rows injected by dashboard.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
     </main>
 
-    <!-- Load dashboard JS -->
+    <!-- Existing dashboard JS (API logic, table, etc.) -->
     <script src="dashboard.js"></script>
+
+    <!-- Header: theme toggle + modal behavior -->
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        // --- Theme toggle ---
+        const toggleBtn = document.getElementById("theme-toggle");
+        const iconSun = document.getElementById("icon-sun");
+        const iconMoon = document.getElementById("icon-moon");
+
+        function updateThemeIcons() {
+          const isDark = document.documentElement.classList.contains("dark");
+          iconSun.classList.toggle("hidden", !isDark);
+          iconMoon.classList.toggle("hidden", isDark);
+        }
+
+        toggleBtn.addEventListener("click", () => {
+          const isDark = document.documentElement.classList.toggle("dark");
+          try {
+            localStorage.setItem("theme", isDark ? "dark" : "light");
+          } catch (e) {}
+          updateThemeIcons();
+        });
+
+        updateThemeIcons();
+
+        // --- Modal open/close ---
+        const modal = document.getElementById("create-modal");
+        const openBtn = document.getElementById("open-create-modal");
+        const closeBtn = document.getElementById("close-create-modal");
+
+        function openModal() {
+          modal.classList.remove("hidden");
+          modal.classList.add("flex"); // center items
+        }
+
+        function closeModal() {
+          modal.classList.add("hidden");
+          modal.classList.remove("flex");
+        }
+
+        openBtn.addEventListener("click", openModal);
+        closeBtn.addEventListener("click", closeModal);
+
+        // Close when clicking backdrop
+        modal.addEventListener("click", (e) => {
+          if (e.target === modal) {
+            closeModal();
+          }
+        });
+      });
+    </script>
   </body>
 </html>
