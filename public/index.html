@@ -19,6 +19,59 @@
         scrollbar-width: none; /* Firefox */
       }
     </style>
+    <style>
+      /* Scroll container for table rows (you already had something similar; keep or adjust) */
+      .scroll-area {
+        max-height: 360px;
+        overflow-y: auto;
+      }
+      .scroll-area::-webkit-scrollbar {
+        display: none;
+      }
+      .scroll-area {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+
+      /* Modal animations */
+      .modal-backdrop {
+        opacity: 0;
+        transition: opacity 0.18s ease-out;
+      }
+      .modal-backdrop-open {
+        opacity: 1;
+      }
+      .modal-panel-animated {
+        transform: scale(0.95);
+        opacity: 0;
+        transition: transform 0.18s ease-out, opacity 0.18s ease-out;
+        transform-origin: center;
+      }
+      .modal-panel-open {
+        transform: scale(1);
+        opacity: 1;
+      }
+
+      /* Toasts */
+      .toast-enter {
+        transform: translateY(8px);
+        opacity: 0;
+      }
+      .toast-enter-active {
+        transform: translateY(0);
+        opacity: 1;
+        transition: transform 0.18s ease-out, opacity 0.18s ease-out;
+      }
+      .toast-exit {
+        transform: translateY(0);
+        opacity: 1;
+      }
+      .toast-exit-active {
+        transform: translateY(8px);
+        opacity: 0;
+        transition: transform 0.18s ease-out, opacity 0.18s ease-out;
+      }
+    </style>
 
     <meta charset="utf-8" />
     <title>TinyLink Dashboard</title>
@@ -112,11 +165,11 @@
     <!-- Create Link Modal -->
     <div
       id="create-modal"
-      class="fixed inset-0 z-40 hidden items-center justify-center bg-slate-900/40"
+      class="modal-backdrop fixed inset-0 z-40 hidden items-center justify-center bg-slate-900/40"
     >
       <div
         id="create-modal-panel"
-        class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-lg mx-4 border border-slate-200/80 dark:border-slate-800/80"
+        class="modal-panel-animated bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-lg mx-4 border border-slate-200/80 dark:border-slate-800/80"
       >
         <div class="px-6 pt-5 pb-3 flex items-center justify-between">
           <h2 class="text-lg font-semibold text-slate-800 dark:text-slate-50">
@@ -168,11 +221,11 @@
     <!-- Link Details Modal -->
     <div
       id="details-modal"
-      class="fixed inset-0 z-40 hidden items-center justify-center bg-slate-900/40"
+      class="modal-backdrop fixed inset-0 z-40 hidden items-center justify-center bg-slate-900/40"
     >
       <div
         id="details-modal-panel"
-        class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-lg mx-4 border border-slate-200/80 dark:border-slate-800/80"
+        class="modal-panel-animated bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-lg mx-4 border border-slate-200/80 dark:border-slate-800/80"
       >
         <div class="px-6 pt-5 pb-3 flex items-center justify-between">
           <h2 class="text-lg font-semibold text-slate-800 dark:text-slate-50">
@@ -266,6 +319,11 @@
 
     <!-- Existing dashboard JS (API logic, table, etc.) -->
     <script src="dashboard.js"></script>
+    <!-- Toast container -->
+    <div
+      id="toast-container"
+      class="fixed bottom-4 right-4 z-[60] flex flex-col gap-2 items-end"
+    ></div>
 
     <!-- Header: theme toggle + modal behavior -->
     <script>
@@ -291,28 +349,40 @@
 
         updateThemeIcons();
 
-        // --- Modal open/close ---
+        // --- Create modal open/close with animation ---
         const modal = document.getElementById("create-modal");
+        const modalPanel = document.getElementById("create-modal-panel");
         const openBtn = document.getElementById("open-create-modal");
         const closeBtn = document.getElementById("close-create-modal");
 
-        function openModal() {
+        function openCreateModal() {
           modal.classList.remove("hidden");
-          modal.classList.add("flex"); // center items
+          modal.classList.add("flex", "modal-backdrop-open");
+
+          // allow layout to apply, then animate panel
+          requestAnimationFrame(() => {
+            modalPanel.classList.add("modal-panel-open");
+          });
         }
 
-        function closeModal() {
-          modal.classList.add("hidden");
-          modal.classList.remove("flex");
+        function closeCreateModal() {
+          modal.classList.remove("modal-backdrop-open");
+          modalPanel.classList.remove("modal-panel-open");
+
+          // wait for animation to finish, then hide
+          setTimeout(() => {
+            modal.classList.add("hidden");
+            modal.classList.remove("flex");
+          }, 180);
         }
 
-        openBtn.addEventListener("click", openModal);
-        closeBtn.addEventListener("click", closeModal);
+        openBtn.addEventListener("click", openCreateModal);
+        closeBtn.addEventListener("click", closeCreateModal);
 
         // Close when clicking backdrop
         modal.addEventListener("click", (e) => {
-          if (e.target === modal) {
-            closeModal();
+          if (e.target.id === "create-modal") {
+            closeCreateModal();
           }
         });
       });

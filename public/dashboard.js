@@ -3,6 +3,48 @@
 const API_BASE = "";
 let hasLoadedOnce = false;
 
+// Toast notifications
+function showToast(message, type = "info") {
+  const container = document.getElementById("toast-container");
+  if (!container) return;
+
+  const toast = document.createElement("div");
+
+  const baseClasses =
+    "min-w-[220px] max-w-xs px-4 py-2 rounded-lg text-sm shadow-md border backdrop-blur bg-white/90 dark:bg-slate-900/90 flex items-start gap-2";
+  const typeClasses =
+    type === "success"
+      ? "border-emerald-300 text-emerald-800 dark:border-emerald-700 dark:text-emerald-200"
+      : type === "error"
+      ? "border-red-300 text-red-800 dark:border-red-700 dark:text-red-200"
+      : "border-slate-300 text-slate-800 dark:border-slate-700 dark:text-slate-100";
+
+  toast.className = baseClasses + " toast-enter";
+  toast.innerHTML = `
+    <span class="mt-[2px] text-xs">
+      ${type === "success" ? "✅" : type === "error" ? "⚠️" : "ℹ️"}
+    </span>
+    <span class="flex-1">${message}</span>
+  `;
+
+  container.appendChild(toast);
+
+  // trigger enter animation
+  requestAnimationFrame(() => {
+    toast.classList.remove("toast-enter");
+    toast.classList.add("toast-enter-active");
+  });
+
+  // auto-dismiss
+  setTimeout(() => {
+    toast.classList.remove("toast-enter-active");
+    toast.classList.add("toast-exit-active");
+    setTimeout(() => {
+      toast.remove();
+    }, 180);
+  }, 2500);
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   loadLinks();
 
@@ -19,12 +61,16 @@ document.addEventListener("DOMContentLoaded", () => {
 async function loadLinks() {
   const tableBody = document.getElementById("links-table-body");
 
-  // Show loading only on first-ever load
+  // Show skeletons only on very first load
   if (!hasLoadedOnce) {
     tableBody.innerHTML = `
       <tr>
-        <td colspan="5" class="p-4 text-center text-slate-500">
-          Loading...
+        <td colspan="5" class="p-4">
+          <div class="space-y-3">
+            <div class="animate-pulse h-4 bg-slate-200 dark:bg-slate-700 rounded"></div>
+            <div class="animate-pulse h-4 bg-slate-200 dark:bg-slate-700 rounded w-5/6"></div>
+            <div class="animate-pulse h-4 bg-slate-200 dark:bg-slate-700 rounded w-3/4"></div>
+          </div>
         </td>
       </tr>
     `;
@@ -61,7 +107,7 @@ async function loadLinks() {
       return;
     }
 
-    // We have real data now → remove any placeholder rows
+    // Remove any non-data rows (skeletons / placeholders)
     Array.from(tableBody.querySelectorAll("tr:not([data-code])")).forEach(
       (row) => row.remove()
     );
@@ -92,6 +138,8 @@ async function loadLinks() {
           </td>
         </tr>
       `;
+    } else {
+      showToast("Error refreshing links", "error");
     }
   }
 }
@@ -133,8 +181,8 @@ function upsertRow(link) {
 
     // Click on code -> go to stats page
     row.querySelector(".cell-code").addEventListener("click", () => {
-  openDetailsModal(link.code);
-});
+      openDetailsModal(link.code);
+    });
 
     // Copy button
     row.querySelector(".btn-copy").addEventListener("click", () => {
@@ -179,7 +227,7 @@ async function handleCreateLink(event) {
     const data = await res.json();
 
     if (!res.ok) {
-      alert(data.error || "Failed to create link");
+      showToast(data.error || "Failed to create link", "error");
       return;
     }
 
@@ -189,16 +237,17 @@ async function handleCreateLink(event) {
 
     // Update table with the new link immediately
     upsertRow(data);
+    showToast("Short link created", "success");
   } catch (err) {
     console.error("Create link error:", err);
-    alert("Error creating link");
+    showToast("Error creating link", "error");
   }
 }
 
 // Copy short URL to clipboard
 function copyToClipboard(text) {
   navigator.clipboard.writeText(text);
-  alert("Copied!");
+  showToast("Short URL copied", "success");
 }
 
 // Delete a link
@@ -212,16 +261,18 @@ async function deleteLink(code) {
     const data = await res.json();
 
     if (!res.ok) {
-      alert(data.error || "Failed to delete");
+      showToast(data.error || "Failed to delete", "error");
       return;
     }
 
     // Remove row from table immediately
     const row = document.querySelector(`tr[data-code="${code}"]`);
     if (row) row.remove();
+
+    showToast("Link deleted", "success");
   } catch (err) {
     console.error(err);
-    alert("Error deleting link");
+    showToast("Error deleting link", "error");
   }
 }
 
@@ -231,10 +282,25 @@ let detailsInterval = null;
 
 function openDetailsModal(code) {
   const modal = document.getElementById("details-modal");
+  const modalPanel = document.getElementById("details-modal-panel");
   const content = document.getElementById("details-content");
 
+  // initial skeleton
+  content.innerHTML = `
+    <div class="space-y-3">
+      <div class="animate-pulse h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/3"></div>
+      <div class="animate-pulse h-4 bg-slate-200 dark:bg-slate-700 rounded w-2/3"></div>
+      <div class="animate-pulse h-4 bg-slate-200 dark:bg-slate-700 rounded w-3/4"></div>
+      <div class="animate-pulse h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/2"></div>
+    </div>
+  `;
+
   modal.classList.remove("hidden");
-  modal.classList.add("flex");
+  modal.classList.add("flex", "modal-backdrop-open");
+
+  requestAnimationFrame(() => {
+    modalPanel.classList.add("modal-panel-open");
+  });
 
   // Load immediately
   loadLinkDetails(code);
@@ -247,11 +313,17 @@ function openDetailsModal(code) {
 
 function closeDetailsModal() {
   const modal = document.getElementById("details-modal");
-  modal.classList.add("hidden");
-  modal.classList.remove("flex");
-
+  const modalPanel = document.getElementById("details-modal-panel");
   const content = document.getElementById("details-content");
-  content.innerHTML = `<p class="text-slate-500">Loading...</p>`;
+
+  modal.classList.remove("modal-backdrop-open");
+  modalPanel.classList.remove("modal-panel-open");
+
+  setTimeout(() => {
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+    content.innerHTML = `<p class="text-slate-500">Loading...</p>`;
+  }, 180);
 
   // Stop auto-refresh
   if (detailsInterval) {
@@ -270,10 +342,8 @@ document.getElementById("details-modal").addEventListener("click", (e) => {
   }
 });
 
-// Fetch & render details
 async function loadLinkDetails(code) {
   const content = document.getElementById("details-content");
-  content.innerHTML = `<p class="text-slate-500">Loading...</p>`;
 
   try {
     const res = await fetch(`/api/links/${code}`);
@@ -287,7 +357,7 @@ async function loadLinkDetails(code) {
     const shortUrl = `${window.location.origin}/${data.code}`;
 
     content.innerHTML = `
-      <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-4 text-sm">
 
         <div>
           <h3 class="font-semibold text-slate-800 dark:text-white">Short Code</h3>
@@ -297,7 +367,13 @@ async function loadLinkDetails(code) {
         <div>
           <h3 class="font-semibold text-slate-800 dark:text-white">Short Link</h3>
           <p class="font-mono break-all text-blue-600">${shortUrl}</p>
-          <button onclick="navigator.clipboard.writeText('${shortUrl}')" class="mt-1 text-blue-600 text-xs hover:underline">Copy</button>
+          <button
+            type="button"
+            class="mt-1 text-blue-600 text-xs hover:underline"
+            onclick="navigator.clipboard.writeText('${shortUrl}'); showToast('Short URL copied', 'success');"
+          >
+            Copy
+          </button>
         </div>
 
         <div>
@@ -312,7 +388,11 @@ async function loadLinkDetails(code) {
 
         <div>
           <h3 class="font-semibold text-slate-800 dark:text-white">Last Clicked</h3>
-          <p>${data.lastClickedAt ? new Date(data.lastClickedAt).toLocaleString() : "-"}</p>
+          <p>${
+            data.lastClickedAt
+              ? new Date(data.lastClickedAt).toLocaleString()
+              : "-"
+          }</p>
         </div>
 
         <div>
@@ -324,5 +404,6 @@ async function loadLinkDetails(code) {
   } catch (err) {
     console.error(err);
     content.innerHTML = `<p class="text-red-600">Error loading details.</p>`;
+    showToast("Error loading link details", "error");
   }
 }
