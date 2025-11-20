@@ -19,7 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
 async function loadLinks() {
   const tableBody = document.getElementById("links-table-body");
 
-  // Show loading only on very first load
+  // Show loading only on first-ever load
   if (!hasLoadedOnce) {
     tableBody.innerHTML = `
       <tr>
@@ -49,6 +49,7 @@ async function loadLinks() {
 
     hasLoadedOnce = true;
 
+    // If no links at all → show placeholder and stop
     if (links.length === 0) {
       tableBody.innerHTML = `
         <tr>
@@ -59,6 +60,11 @@ async function loadLinks() {
       `;
       return;
     }
+
+    // We have real data now → remove any placeholder rows
+    Array.from(tableBody.querySelectorAll("tr:not([data-code])")).forEach(
+      (row) => row.remove()
+    );
 
     // Build a set of codes from the latest data
     const latestCodes = new Set(links.map((l) => l.code));
