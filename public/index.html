@@ -1,6 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <style>
+      /* Scroll container for table rows */
+      .scroll-area {
+        max-height: 360px; /* Adjust as you like */
+        overflow-y: auto;
+      }
+
+      /* Hide scrollbar for WebKit (Chrome, Edge, Safari) */
+      .scroll-area::-webkit-scrollbar {
+        display: none;
+      }
+
+      /* Hide scrollbar for Firefox + older Edge */
+      .scroll-area {
+        -ms-overflow-style: none; /* IE and Edge */
+        scrollbar-width: none; /* Firefox */
+      }
+    </style>
+
     <meta charset="utf-8" />
     <title>TinyLink Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -28,7 +47,7 @@
   </head>
 
   <body
-    class="bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen"
+    class="bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen overflow-hidden"
   >
     <!-- Modern fixed header -->
     <header class="fixed top-0 inset-x-0 z-50">
@@ -153,7 +172,9 @@
     </div>
 
     <!-- Main content -->
-    <main class="max-w-5xl mx-auto px-4 pt-28 pb-10 space-y-6">
+    <main
+      class="max-w-5xl mx-auto px-4 pt-28 pb-4 space-y-4 h-[calc(100vh-80px)] flex flex-col"
+    >
       <!-- Overview card -->
       <section>
         <div
@@ -171,16 +192,15 @@
       </section>
 
       <!-- Links table -->
-      <section>
+      <!-- Links table -->
+      <section class="flex-1">
         <div
-          class="bg-white dark:bg-slate-900 rounded-2xl shadow p-6 border border-slate-200 dark:border-slate-800"
+          class="bg-white dark:bg-slate-900 rounded-2xl shadow p-6 border border-slate-200 dark:border-slate-800 h-full flex flex-col"
         >
           <div
             class="mb-4 flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between"
           >
-            <h2
-              class="text-xl font-semibold text-slate-800 dark:text-slate-50"
-            >
+            <h2 class="text-xl font-semibold text-slate-800 dark:text-slate-50">
               Your Short Links
             </h2>
             <p class="text-xs text-slate-500 dark:text-slate-400">
@@ -189,7 +209,10 @@
             </p>
           </div>
 
-          <div class="overflow-x-auto rounded-xl border border-slate-100 dark:border-slate-800">
+          <!-- Scrollable area just for the table body -->
+          <div
+            class="overflow-x-auto rounded-xl border border-slate-100 dark:border-slate-800 flex-1"
+          >
             <table class="w-full text-left border-collapse text-sm">
               <thead
                 class="bg-slate-100/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300"
@@ -202,10 +225,16 @@
                   <th class="p-3 text-center">Actions</th>
                 </tr>
               </thead>
-              <tbody id="links-table-body" class="bg-white dark:bg-slate-900">
-                <!-- Rows injected by dashboard.js -->
-              </tbody>
             </table>
+
+            <!-- This div is the only vertically scrollable area -->
+            <div class="scroll-area">
+              <table class="w-full text-left border-collapse text-sm">
+                <tbody id="links-table-body" class="bg-white dark:bg-slate-900">
+                  <!-- Rows injected by dashboard.js -->
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </section>
